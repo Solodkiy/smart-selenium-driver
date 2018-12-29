@@ -1,5 +1,6 @@
 {
     "name": "solodkiy/smart-selenium-driver",
+    "license": "MIT",
     "require": {
         "php": "^7.1",
         "facebook/webdriver": "^1.4"

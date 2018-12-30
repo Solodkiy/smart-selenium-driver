@@ -3,16 +3,17 @@ declare(strict_types=1);
 
 namespace Solodkiy\SmartSeleniumDriver;
 
-use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Exception\TimeOutException;
-use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use PHPUnit\Framework\TestCase;
 use Solodkiy\SmartSeleniumDriver\Exceptions\SmartSeleniumCommandError;
 
+/**
+ * This is integration test. Use this command to run smart-selenium instance:
+ * docker run -p 4444:4444 solodkiy/smart-selenium
+ */
 class SmartSeleniumDriverTest extends TestCase
 {
     /**
@@ -22,10 +23,10 @@ class SmartSeleniumDriverTest extends TestCase
      */
     public function testDownloadFile()
     {
-        // This is integration test. Use this command to run smart-selenium instance:
-        // docker run -p 4444:4444 solodkiy/smart-selenium
-
         $driver = $this->createDriver();
+
+        $driver->get('https://httpbin.org/html');
+
         $driver->clearDownloadDir();
 
         $url = 'http://httpbin.org/stream-bytes/100000';
@@ -33,6 +34,29 @@ class SmartSeleniumDriverTest extends TestCase
 
         $content = $driver->getDownloadedFileByName('100000', 5);
         $this->assertEquals(100000, strlen($content));
+
+        $pageTitle = $driver->findElement(WebDriverBy::cssSelector('H1'))->getText();
+        $this->assertEquals('Herman Melville - Moby-Dick', $pageTitle);
+    }
+
+    public function testGetFiles()
+    {
+        $driver = $this->createDriver();
+
+        $driver->get('https://httpbin.org/html');
+
+        $driver->clearDownloadDir();
+        $files = $driver->getDownloadedFiles();
+        $this->assertEquals([], $files);
+
+        $url = 'http://httpbin.org/response-headers?Content-Disposition=' . urlencode('attachment; filename=MyFileName.ext');
+        $driver->get($url);
+
+        $files = $driver->getDownloadedFiles();
+        $this->assertEquals(1, count($files));
+
+        $pageTitle = $driver->findElement(WebDriverBy::cssSelector('H1'))->getText();
+        $this->assertEquals('Herman Melville - Moby-Dick', $pageTitle);
     }
 
     private function createDriver(): SmartSeleniumDriver
